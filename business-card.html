@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>כרטיס ביקור דיגיטלי</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans+Hebrew:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111;
+    --border: #222;
+    --accent: #00e5a0;
+    --text: #f0f0f0;
+    --muted: #555;
+    --edit-bg: #1a1a1a;
+  }
+
+  body {
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Sans Hebrew', sans-serif;
+    color: var(--text);
+    padding: 24px;
+  }
+
+  .hint {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hint::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    animation: fadeIn 0.6s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .card-top {
+    padding: 32px 32px 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: #181818;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 20px;
+    color: var(--accent);
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    overflow: hidden;
+    position: relative;
+  }
+  .avatar:hover { border-color: var(--accent); }
+  .avatar input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .avatar img {
+    width: 100%; height: 100%; object-fit: cover;
+    position: absolute; inset: 0;
+    border-radius: 50%;
+  }
+
+  .name-field {
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--text);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 6px;
+  }
+
+  .role-field {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    margin-bottom: 4px;
+  }
+
+  .company-field {
+    font-size: 13px;
+    color: var(--accent);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* Editable fields */
+  [contenteditable] {
+    outline: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: text;
+    border-radius: 2px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+    display: inline-block;
+    min-width: 60px;
+  }
+  [contenteditable]:hover {
+    border-bottom-color: var(--border);
+  }
+  [contenteditable]:focus {
+    border-bottom-color: var(--accent);
+    background: var(--edit-bg);
+  }
+  [contenteditable].placeholder {
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .card-bottom {
+    padding: 20px 32px 28px;
+  }
+
+  .contact-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #161616;
+  }
+  .contact-row:last-child { border-bottom: none; }
+
+  .contact-icon {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: var(--muted);
+  }
+  .contact-icon svg { width: 14px; height: 14px; }
+
+  .contact-value {
+    font-size: 13px;
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 300;
+    flex: 1;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 32px;
+    border-top: 1px solid var(--border);
+    background: #0d0d0d;
+  }
+
+  .footer-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: #333;
+    letter-spacing: 0.1em;
+  }
+
+  .save-btn {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent);
+    padding: 6px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    text-transform: uppercase;
+  }
+  .save-btn:hover {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: var(--accent);
+    color: #000;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 10px 20px;
+    border-radius: 2px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<p class="hint">לחץ על כל שדה כדי לערוך</p>
+
+<div class="card" id="card">
+  <div class="card-top">
+    <div class="tag">// dev.card</div>
+
+    <div class="avatar" title="לחץ להעלאת תמונה" id="avatarWrap">
+      <span id="avatarInitials">?</span>
+      <input type="file" accept="image/*" onchange="loadAvatar(this)">
+    </div>
+
+    <div class="name-field">
+      <span contenteditable="true" id="nameField" class="placeholder" 
+            data-placeholder="שם מלא"
+            onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this); updateInitials()">שם מלא</span>
+    </div>
+    <div class="role-field">
+      <span contenteditable="true" id="roleField" class="placeholder"
+            data-placeholder="תפקיד"
+            onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">תפקיד</span>
+    </div>
+    <div class="company-field">
+      <span contenteditable="true" id="companyField" class="placeholder"
+            data-placeholder="@ חברה"
+            onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">@ חברה</span>
+    </div>
+  </div>
+
+  <div class="card-bottom">
+    <div class="contact-row">
+      <div class="contact-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z"/>
+        </svg>
+      </div>
+      <div class="contact-value">
+        <span contenteditable="true" class="placeholder"
+              data-placeholder="+972 50-000-0000"
+              onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">+972 50-000-0000</span>
+      </div>
+    </div>
+
+    <div class="contact-row">
+      <div class="contact-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/>
+        </svg>
+      </div>
+      <div class="contact-value">
+        <span contenteditable="true" class="placeholder"
+              data-placeholder="email@example.com"
+              onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">email@example.com</span>
+      </div>
+    </div>
+
+    <div class="contact-row">
+      <div class="contact-icon">
+        <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253M3 12c0 .778.099 1.533.284 2.253"/>
+        </svg>
+      </div>
+      <div class="contact-value">
+        <span contenteditable="true" class="placeholder"
+              data-placeholder="www.yoursite.com"
+              onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">www.yoursite.com</span>
+      </div>
+    </div>
+
+    <div class="contact-row">
+      <div class="contact-icon">
+        <svg fill="currentColor" viewBox="0 0 24 24">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+      </div>
+      <div class="contact-value">
+        <span contenteditable="true" class="placeholder"
+              data-placeholder="linkedin.com/in/yourname"
+              onfocus="clearPlaceholder(this)" onblur="restorePlaceholder(this)">linkedin.com/in/yourname</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card-footer">
+    <span class="footer-tag">DIGITAL · CARD · 2026</span>
+    <button class="save-btn" onclick="saveCard()">שמור PNG</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ הכרטיס נשמר בהצלחה</div>
+
+<script>
+function clearPlaceholder(el) {
+  if (el.classList.contains('placeholder')) {
+    el.textContent = '';
+    el.classList.remove('placeholder');
+  }
+}
+
+function restorePlaceholder(el) {
+  if (el.textContent.trim() === '') {
+    el.textContent = el.dataset.placeholder;
+    el.classList.add('placeholder');
+  }
+}
+
+function updateInitials() {
+  const name = document.getElementById('nameField').textContent.trim();
+  const initials = document.getElementById('avatarInitials');
+  if (name && name !== 'שם מלא') {
+    const parts = name.split(' ');
+    initials.textContent = parts.length >= 2
+      ? (parts[0][0] + parts[parts.length-1][0]).toUpperCase()
+      : name[0].toUpperCase();
+  } else {
+    initials.textContent = '?';
+  }
+}
+
+function loadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const wrap = document.getElementById('avatarWrap');
+    let img = wrap.querySelector('img');
+    if (!img) { img = document.createElement('img'); wrap.appendChild(img); }
+    img.src = e.target.result;
+    document.getElementById('avatarInitials').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveCard() {
+  showToast('⟳ שומר...');
+  // html2canvas fallback - just show message
+  setTimeout(() => showToast('✓ העתיקו את הכרטיס באמצעות צילום מסך'), 300);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
